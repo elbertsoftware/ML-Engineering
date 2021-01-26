@@ -4,6 +4,8 @@ This is the graduation project from Udacity Nanodegree program "Machine Learning
 
 The approach is leveraging both Azure Auto ML and HyperDrive features to search for the best model in order to predict time-series based sales for each store operated by Rossmann in European countries.
 
+The best model will be deployed and hosted on Azure Container Instance for production consumption. It will be available as REST API endpoint where any type of applications can sent HTTP requests to and receive back predictions.
+
 ## Project Set Up and Installation
 
 1. Install Anaconda: https://docs.anaconda.com/anaconda/install
@@ -394,14 +396,19 @@ score_value = r2_score(test_df['y'], test_predictions['yhat'])
 
 ### Results
 
-The best hyperparameters after 50 runs are:
+The Hyperdrive run completed in 25 minutes after examining 50 combinations of these 4 hyperparameters as configured:
+
+![alt text](screenshot/hyperdrive/05_hd_run_details.png)
+![alt text](screenshot/hyperdrive/01_hd_run_details.png)
+
+The best hyperparameters are:
 
 1. `changepoint_prior_scale`: 0.03196
 2. `holidays_prior_scale`: 0.21653
 3. `n_changepoints`: 123
 4. `seasonality_mode`: multiplicative
 
-![alt text](screenshot/hyperdrive/01_hd_run_details.png)
+![alt text](screenshot/hyperdrive/06_hd_best_parameters.png)
 
 Random Parameter search space:
 
@@ -470,9 +477,9 @@ aci_service.state
 
 ![alt text](screenshot/18_model_service_endpoint.png)
 
-### Production Model Consumption
+**Test Production Model Endpoint:**
 
-To replicate production model consumption, forecast dataset is sent to the deployed model's webservice endpoint and obtain predictions back:
+After deploying the model into production, as the development team, we can test the endpoint by using a simple Python script to serialize forecast dataset into JSON, send it off to the service, and retrieve the predictions back:
 
 ```
 # retrieve forecast dataset and convert it to Pandas dataframe
@@ -497,6 +504,47 @@ except:
 ```
 
 ![alt text](screenshot/19_prod_predictions.png)
+
+## Production Model Consumption
+
+With model capability available as REST endpoints, making predictions is just simple as sending HTTP POST requests to its endpoint along with predictors as inputs, the predictions are sent back as HTTP POST responses. Any application can leverage the model.
+
+**Open API Documentation:**
+
+Swagger is the standardized way to document REST API in the industry. It provides universally recognized web interface to show endpoints inputs, outputs, and how to use them.
+
+Azure generates API documentation for every deployed model in JSON format. It can be viewed in Swagger UI
+
+* Access Swagger document in Azure: Navigate to `Endpoints` section of Azure Machine Learning Studio and select the newly deployed endpoint under `Real-time endpoints` tab. The Swagger URL to download the document should be available in the `Details` tab:
+
+    ![alt text](screenshot/20_prod_endpoints.png)
+    ![alt text](screenshot/21_prod_swagger_uri.png)
+
+* Download Swagger document: Use `curl` CLI tool to save it as JSON file `swagger.json` to the sub folder `swagger` of the project folder:
+
+    `curl http://3e6071ca-ef64-43af-b5f6-07f66e5b72a2.westus.azurecontainer.io/swagger.json --output swagger.json`
+
+* Start Swagger UI: It is a docker container. Run the provided convenient Bash script `swagger.sh` on terminal:
+
+    `./swagger.sh`
+
+* Start serve.py: In order to feed the JSON file to the Swagger UI, a little Python code is needed to bypass CORS restriction from Azure. Run the provided `serve.py` on terminal:
+
+    `python serve.py`
+
+* Examine APIs: Users of the production model can explore the API details by navigate to Swagger UI and learn about how input and output JSONs look like:
+
+    ![alt text](screenshot/22_prod_swagger_ui.png)
+
+**API Consumption:**
+
+* Obtain API score URL from Azure: Navigate to the same place where `Swagger URL` is then click on `Consume` tab and copy the `REST endpoint`:
+
+    ![alt text](screenshot/23_prod_score_uri.png)
+
+* Make predictions: We gonna use Postman to send HTTP requests the endpoint but they can be sent from any typ of applications:
+
+    ![alt text](screenshot/24_prod_score_consumption.png)
 
 ## Screen Recording
 
