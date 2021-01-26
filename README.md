@@ -542,9 +542,45 @@ Azure generates API documentation for every deployed model in JSON format. It ca
 
     ![alt text](screenshot/23_prod_score_uri.png)
 
-* Make predictions: We gonna use Postman to send HTTP requests the endpoint but they can be sent from any typ of applications:
+* Make predictions via Postman: We gonna use Postman to send HTTP requests to the endpoint but they can be sent from any typ of applications:
 
     ![alt text](screenshot/24_prod_score_consumption.png)
+
+* Make predictions via Python code: We can also use Python script to send HTTP requests to the endpoint:
+
+```
+score_url = 'http://3e6071ca-ef64-43af-b5f6-07f66e5b72a2.westus.azurecontainer.io/score'
+data = {
+  "data": [
+    {
+      "Date": "2015-09-18 00:00:00,000000",
+      "DayOfWeek": 5,
+      "Open": 1,
+      "Promo": 1,
+      "StateHoliday": "0",
+      "SchoolHoliday": 0
+    },
+    {
+      "Date": "2015-09-19 00:00:00,000000",
+      "DayOfWeek": 6,
+      "Open": 1,
+      "Promo": 0,
+      "StateHoliday": "0",
+      "SchoolHoliday": 0
+    }
+  ]
+}
+
+response = requests.post(score_url, input_data=json.dumps(data), headers={'Content-Type': 'application/json'})
+```
+
+Same result returned as what Postman got:
+
+![alt text](screenshot/25_prod_python_score_json.png)
+
+We can convert the result into Pandas dataframe for better experience:
+
+![alt text](screenshot/26_prod_pandas_score.png)
 
 ## Screen Recording
 
